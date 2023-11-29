@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "target": "ESNext", // versão do JS que vai transpilar
+    "rootDir": "./src", // pasta de origem
+    "outDir": "./build" // pasta de destino
+  },
+  "include": ["src/**/*.ts"], // incluir todos os arquivos Typescript
+  "exclude": ["node_modules"],
+}
