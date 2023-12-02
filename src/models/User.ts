@@ -10,6 +10,8 @@ export class User {
   private _email: string;
   private _password: string;
   private tweets: Tweet[];
+  private _followers: User[];
+  private _following: User[];
 
   constructor(name: string, username: string, email: string, password: string) {
     this._id = randomUUID();
@@ -34,17 +36,26 @@ export class User {
     return this._username;
   }
 
-  
-
-  sendTweet(content:string): void {
-    const newTweet = new Tweet (content,TweetType.Normal)
-    this.tweets.push(newTweet)
+  get followers() {
+    return this._followers;
+  }
+  sendTweet(content: string): void {
+    const newTweet = new Tweet(content, TweetType.Normal);
+    this.tweets.push(newTweet);
     console.log(`@<${this._username}>: ${content} \n likes: replies`);
-    
   }
 
-  follow() {}
-
+  follow(follower: User) {
+    if (follower._username === this._username) {
+      throw new Error("Você não pode seguir a si mesmo");
+    } else {
+      follower._followers.push(this);
+      this._following.push(follower);
+      console.log(
+        `<${follower._username}> foi seguido por <${this._username}>`
+      );
+    }
+  }
   showFeed() {}
 
   showTweets() {}
