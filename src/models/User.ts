@@ -1,21 +1,23 @@
 import { randomUUID } from "crypto";
 import { users } from "../database/users";
+import { Tweet, TweetType } from "./Tweet";
+import { tweets } from "../database/tweets";
 
 export class User {
   private _id: string;
   private _name: string;
   private _username: string;
-  private email: string;
-  private password: string;
-  private tweets: string[];
+  private _email: string;
+  private _password: string;
+  private tweets: Tweet[];
 
   constructor(name: string, username: string, email: string, password: string) {
     this._id = randomUUID();
     this._name = name;
     this._username = username;
-    this.email = email;
+    this._email = email;
     this.tweets = [];
-    this.password = password;
+    this._password = password;
 
     if (users.find((user) => user.username == this._username)) {
       throw new Error("Username already exists");
@@ -32,7 +34,14 @@ export class User {
     return this._username;
   }
 
-  sendTweet() {}
+  
+
+  sendTweet(content:string): void {
+    const newTweet = new Tweet (content,TweetType.Normal)
+    this.tweets.push(newTweet)
+    console.log(`@<${this._username}>: ${content} \n likes: replies`);
+    
+  }
 
   follow() {}
 
@@ -44,7 +53,7 @@ export class User {
     return {
       name: this._name,
       username: this._username,
-      email: this.email,
+      email: this._email,
     };
   }
 }
