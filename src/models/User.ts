@@ -1,70 +1,111 @@
 import { randomUUID } from "crypto";
 import { users } from "../database/users";
 import { Tweet, TweetType } from "./Tweet";
-import { tweets } from "../database/tweets";
+import { log } from "console";
 
 export class User {
   private _id: string;
-  private _name: string;
-  private _username: string;
-  private _email: string;
-  private _password: string;
-  private tweets: Tweet[];
-  private _followers: User[];
-  private _following: User[];
+  private _tweets: Tweet[] = [];
+  private _followers: User[] = [];
+  private _following: User[] = [];
+  private _likedBy: Tweet[] = [];
 
-  constructor(name: string, username: string, email: string, password: string) {
+  constructor(
+    private _name: string,
+    private _username: string,
+    private _email: string,
+    private _password: string
+  ) {
     this._id = randomUUID();
-    this._name = name;
-    this._username = username;
-    this._email = email;
-    this.tweets = [];
-    this._password = password;
 
-    if (users.find((user) => user.username == this._username)) {
+    if (users.some((user) => user.username === this._username)) {
       throw new Error("Username already exists");
     }
 
     users.push(this);
+    console.log("User created successfully!");
+    
   }
 
-  get name() {
+  get name(): string {
     return this._name;
   }
 
-  get username() {
+  get username(): string {
     return this._username;
   }
 
-  get followers() {
+  get followers(): User[] {
     return this._followers;
   }
-  sendTweet(content: string): void {
-    const newTweet = new Tweet(content, TweetType.Normal);
-    this.tweets.push(newTweet);
-    console.log(`@<${this._username}>: ${content} \n likes: replies`);
+  get likedBy() {
+    return this._likedBy;
   }
 
-  follow(follower: User) {
+  get tweets() {
+    return this._tweets;
+  }
+
+  sendTweet(content: string): Tweet {
+    const newTweet = new Tweet(content, TweetType.Normal, this);
+    this._tweets.push(newTweet);
+    console.log(`<@${this._username}> Tweet sent successfully!`);
+    return newTweet;
+  }
+
+  follow(follower: User): void {
     if (follower._username === this._username) {
       throw new Error("Você não pode seguir a si mesmo");
-    } else {
-      follower._followers.push(this);
-      this._following.push(follower);
-      console.log(
-        `<${follower._username}> foi seguido por <${this._username}>`
-      );
     }
+
+    follower._followers.push(this);
+    this._following.push(follower);
+    console.log(
+      `<@${follower._username}> foi seguido por <@${this._username}>`
+    );
   }
-  showFeed() {}
 
-  showTweets() {}
+  showTweetsLiked(): void {
+    this._tweets.forEach((tweet) => {
+      console.log(`@${this._username} : ${tweet.content}`);
+      if (tweet.likes >= 2) {
+        console.log(
+          `[@${tweet.liked[0].username} and other ${
+            tweet.liked.length - 1
+          } user liked this]`
+        );
+      } else if (tweet.likes === 1) {
+        console.log(`[${tweet.liked[0].username} liked this]`);
+      }
+    });
+  }
 
-  toJSON() {
-    return {
-      name: this._name,
-      username: this._username,
-      email: this._email,
-    };
+  showTweets(): void {
+    this._tweets.forEach((tweet) => {
+      console.log(`@${this._username} : ${tweet.content}`);
+      if (tweet.likes >= 2) {
+        console.log(
+          `[@${tweet.liked[0].username} and other ${
+            tweet.liked.length - 1
+          } user liked this]`
+        );
+      } else if (tweet.likes === 1) {
+        console.log(`[${tweet.liked[0].username} liked this]`);
+      }
+      if (tweet.replys.length !== 0) {
+        tweet.showReplies();
+      }
+    });
+  }
+
+  showFeed(): void {
+    console.log("============================");
+    console.log(`[ ---  Feed de ${this._username} --- ]`);
+    console.log("============================");
+    this.showTweets();
+
+    this._following.forEach((user) => {
+      user.showTweets();
+    });
   }
 }
